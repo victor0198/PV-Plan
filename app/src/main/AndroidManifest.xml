@@ -27,15 +27,6 @@
         <activity
             android:name=".ProjectConfigurationActivity"
             android:label="Project" />
-        <activity
-            android:name=".LocationActivity"
-            android:label="Location" />
-        <activity
-            android:name=".ConsumersActivity"
-            android:label="Consumer profile" />
-        <activity
-            android:name=".ResultsActivity"
-            android:label="Results" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

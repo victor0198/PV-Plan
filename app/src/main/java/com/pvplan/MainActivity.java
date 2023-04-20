@@ -26,6 +26,8 @@ import com.pvplan.databinding.MainBinding;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MainActivity extends AppCompatActivity implements ProjectNameDialog.ProjectNameDialogListener {
 
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements ProjectNameDialog
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.pv_icon_50px);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        readProjects();
+//        readProjects();
 
         binding.addProject.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,24 +54,13 @@ public class MainActivity extends AppCompatActivity implements ProjectNameDialog
                 openDialog();
             }
         });
+//        List<ProjectModel> first5ElementsArray = pm.subList(0,5);
 
-//                TODO: download the file containing the TMY data, on compute Button click
-//                Uri uri = Uri.parse("https://re.jrc.ec.europa.eu/api/v5_2/seriescalc?lat=47.149&lon=28.825&raddatabase=PVGIS-SARAH2&browser=1&outputformat=csv&userhorizon=&usehorizon=1&angle=0&aspect=0&startyear=2005&endyear=2005&mountingplace=free&optimalinclination=0&optimalangles=0&js=1&select_database_hourly=PVGIS-SARAH2&hstartyear=2005&hendyear=2005&trackingtype=0&hourlyangle=0&hourlyaspect=0&pvcalculation=1&pvtechchoice=crystSi&peakpower=1&loss=14&components=1");
-//
-//                DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-//
-//                DownloadManager.Request request = new DownloadManager.Request(uri);
-//                request.setTitle("My File");
-//                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_HIDDEN);
-//                request.setVisibleInDownloadsUi(false);
-//                request.setDestinationUri(Uri.parse("file://" + Environment.getExternalStorageDirectory() + "/PV/myfile.csv"));
-//
-//                downloadManager.enqueue(request);
+//        adapter = new ProjectsListRecyclerViewAdapter(this, pm, this);
+//        binding.projectsListRecycleView.setAdapter(adapter);
+//        binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new ProjectsListRecyclerViewAdapter(this, pm, this);
-        binding.projectsListRecycleView.setAdapter(adapter);
-        binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(this));
-
+        resetRecycler();
     }
 
     @Override
@@ -186,48 +177,52 @@ public class MainActivity extends AppCompatActivity implements ProjectNameDialog
     }
 
     public void resetRecycler(){
-        LoadProjects projectsListTask = new LoadProjects(this);
-        projectsListTask.execute();
+        readProjects();
+        binding.projectsListRecycleView.setAdapter(new ProjectsListRecyclerViewAdapter(this, pm, this));
+        binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(this));
+
+//        LoadProjects projectsListTask = new LoadProjects(this);
+//        projectsListTask.execute();
     }
 
-    private static class LoadProjects extends AsyncTask<Integer, Integer, String> {
-        private WeakReference<MainActivity> activityWeakReference;
-
-        LoadProjects(MainActivity mainActivity){
-            activityWeakReference = new WeakReference<>(mainActivity);
-        }
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            // ...
-        }
-
-        @Override
-        protected String doInBackground(Integer... integers) {
-            // ...
-            return "Finished!";
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-            // ...
-        }
-
-        @Override
-        protected void onPostExecute(String string) {
-            super.onPostExecute(string);
-
-            MainActivity activity = activityWeakReference.get();
-            if (activity == null || activity.isFinishing()){
-                return;
-            }
-
-            activity.readProjects();
-            activity.binding.projectsListRecycleView.setAdapter(new ProjectsListRecyclerViewAdapter(activity, activity.pm, activity));
-            activity.binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(activity));
-        }
-    }
+//    private static class LoadProjects extends AsyncTask<Integer, Integer, String> {
+//        private WeakReference<MainActivity> activityWeakReference;
+//
+//        LoadProjects(MainActivity mainActivity){
+//            activityWeakReference = new WeakReference<>(mainActivity);
+//        }
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            // ...
+//        }
+//
+//        @Override
+//        protected String doInBackground(Integer... integers) {
+//            // ...
+//            return "Finished!";
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            super.onProgressUpdate(values);
+//            // ...
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String string) {
+//            super.onPostExecute(string);
+//
+//            MainActivity activity = activityWeakReference.get();
+//            if (activity == null || activity.isFinishing()){
+//                return;
+//            }
+//
+//            activity.readProjects();
+//            activity.binding.projectsListRecycleView.setAdapter(new ProjectsListRecyclerViewAdapter(activity, activity.pm, activity));
+//            activity.binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(activity));
+//        }
+//    }
 
     public void runProjectLauncher(Intent intent) {
         projectLauncher.launch(intent);

@@ -6,16 +6,16 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.pvplan.databinding.ProjectConfigurationBinding;
+import com.pvplan.databinding.SettingsBinding;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    ProjectConfigurationBinding binding;
+    SettingsBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ProjectConfigurationBinding.inflate(getLayoutInflater());
+        binding = SettingsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
