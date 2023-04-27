@@ -98,11 +98,11 @@ public class LocationFragment extends Fragment {
         IMapController mapController;
         mapController = map.getController();
         double map_zoom = 4.0;
-        if (currProj.getLatitude().equals("-1") || currProj.getLongitude().equals("-1")){
+        if (currProj.getLatitude().equals("-181") || currProj.getLongitude().equals("-181")){
              startPoint = new GeoPoint(36.0, 15.0);
         }else{
             startPoint = new GeoPoint(Double.parseDouble(currProj.getLatitude()), Double.parseDouble(currProj.getLongitude()));
-            map_zoom = 9.0;
+            map_zoom = 11.0;
         }
         mapController.setZoom(map_zoom);
         mapController.setCenter(startPoint);
@@ -118,6 +118,7 @@ public class LocationFragment extends Fragment {
 
                 // move to consumers tab
                 Log.d("Tabs switching", "moving from location to consumers");
+                parentActivity.enableTab(tabLayout, CONSUMERS_TAB_POSITION);
                 viewPager2.setCurrentItem(CONSUMERS_TAB_POSITION);
                 tabLayout.getTabAt(CONSUMERS_TAB_POSITION).select();
             }

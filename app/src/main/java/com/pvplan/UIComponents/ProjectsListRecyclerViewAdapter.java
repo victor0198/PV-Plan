@@ -42,8 +42,8 @@ public class ProjectsListRecyclerViewAdapter extends RecyclerView.Adapter<Projec
         holder.nam.setText(pm.get(pm.size()-position-1).getName());
         Log.d("in recycler", "showing Lat:" + pm.get(pm.size()-position-1).getLatitude()+".");
         Log.d("in recycler", "showing Lat:" + pm.get(pm.size()-position-1).getLatitude()+".");
-
-        if (!pm.get(pm.size()-position-1).getLatitude().equals("-1") && !pm.get(pm.size()-position-1).getLongitude().equals("-1")){
+        Log.d("->>>",pm.get(pm.size()-position-1).getLatitude().toString());
+        if (!pm.get(pm.size()-position-1).getLatitude().equals("-181") && !pm.get(pm.size()-position-1).getLongitude().equals("-181")){
             holder.idx.setText("Location: " +
                     pm.get(pm.size()-position-1).getLatitude() + ", " +
                     pm.get(pm.size()-position-1).getLongitude());

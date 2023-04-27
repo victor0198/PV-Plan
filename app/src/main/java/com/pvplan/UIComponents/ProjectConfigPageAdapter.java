@@ -35,11 +35,11 @@ public class ProjectConfigPageAdapter extends FragmentStateAdapter {
         Log.d("fragment number", Integer.toString(position));
 
         if(position == 1){
-            return new ConsumersFragment(projectId, tabLayout, viewPager2);
+            return new ConsumersFragment(parentActivity, projectId, tabLayout, viewPager2);
         }else if(position == 2){
-            return new ArrayFragment();
+            return new ArrayFragment(parentActivity, projectId, tabLayout, viewPager2);
         }else if(position == 3){
-            return new StorageFragment();
+            return new StorageFragment(parentActivity, projectId, tabLayout, viewPager2);
         }else if(position == 4){
             return new ResultsFragment(projectId);
         }

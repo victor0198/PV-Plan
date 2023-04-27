@@ -1,6 +1,8 @@
 package com.pvplan;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.widget.Toast;
@@ -61,7 +64,31 @@ public class MainActivity extends AppCompatActivity implements ProjectNameDialog
 //        binding.projectsListRecycleView.setLayoutManager(new LinearLayoutManager(this));
 
         resetRecycler();
+
+        checkPermissions();
     }
+
+
+    public void checkPermissions(){
+        // Check if we have Call permission
+        int permission = ActivityCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            mPermissionResult.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+    }
+
+    private ActivityResultLauncher<String> mPermissionResult = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            result -> {
+                if(result) {
+                    Log.e("Permission..", "onActivityResult: Permission granted");
+                } else {
+                    Toast.makeText(this, "Don't have permission to save file.", Toast.LENGTH_LONG).show();
+                }
+            }
+    );
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -171,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements ProjectNameDialog
     @Override
     public void applyText(String projectName) {
         DataBaseHelper dbh = new DataBaseHelper(binding.getRoot().getContext());
-        dbh.addProject(binding.getRoot().getContext(), projectName, 0);
+        dbh.addProject(binding.getRoot().getContext(), projectName, 0d);
 
         resetRecycler();
     }

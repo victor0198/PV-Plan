@@ -8,35 +8,35 @@
 
     <EditText
         android:id="@+id/panel_tilt_input"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="14dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:ems="10"
         android:inputType="number"
-        app:layout_constraintStart_toEndOf="@+id/array_power"
+        app:layout_constraintStart_toEndOf="@+id/azimuth_angle"
         app:layout_constraintTop_toBottomOf="@+id/array_power_input" />
 
     <TextView
         android:id="@+id/array_power"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
         android:foregroundTint="#646464"
         android:text="Power of panels"
-        android:textSize="18dp"
+        android:textSize="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/array_power_input" />
 
     <EditText
         android:id="@+id/array_power_input"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:ems="10"
-        android:inputType="number"
+        android:inputType="numberDecimal"
         app:layout_constraintStart_toEndOf="@+id/array_power"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -44,100 +44,167 @@
         android:id="@+id/panel_tilt_angle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="26dp"
         android:foregroundTint="#646464"
-        android:text="Tilt angle"
-        android:textSize="18dp"
-        app:layout_constraintEnd_toEndOf="@+id/array_power"
+        android:text="Slope"
+        android:textSize="16dp"
+        app:layout_constraintEnd_toEndOf="@+id/azimuth_angle"
+        app:layout_constraintStart_toStartOf="@+id/array_power"
         app:layout_constraintTop_toBottomOf="@+id/array_power" />
 
     <EditText
         android:id="@+id/azimuth_input"
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="14dp"
+        android:layout_width="45dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:ems="10"
-        android:inputType="number"
-        app:layout_constraintStart_toEndOf="@+id/array_power"
+        android:inputType="number|numberSigned"
+        app:layout_constraintStart_toEndOf="@+id/azimuth_angle"
         app:layout_constraintTop_toBottomOf="@+id/panel_tilt_input" />
 
     <TextView
         android:id="@+id/azimuth_angle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="26dp"
         android:foregroundTint="#646464"
-        android:text="Azimuth angle"
-        android:textSize="18dp"
-        app:layout_constraintEnd_toEndOf="@+id/array_power"
+        android:text="Orientation"
+        android:textSize="16dp"
+        app:layout_constraintStart_toStartOf="@+id/array_power"
         app:layout_constraintTop_toBottomOf="@+id/panel_tilt_angle" />
 
-    <ScrollView
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/graph_pv_year"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="300dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/azimuth_input">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/textView10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="32dp"
-                    android:layout_weight="1"
-                    android:text="Typical day of"
-                    android:textSize="18dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <Spinner
-                    android:id="@+id/spinner_moth_pv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="200"
-                    app:layout_constraintStart_toEndOf="@+id/textView10"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <com.jjoe64.graphview.GraphView
-                android:id="@+id/graph_pv_day"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="24dp" />
-
-            <com.jjoe64.graphview.GraphView
-                android:id="@+id/graph_pv_year"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_alignParentTop="true"
-                android:layout_marginTop="24dp" />
-        </LinearLayout>
-    </ScrollView>
+        app:layout_constraintTop_toBottomOf="@+id/compute_array" />
 
     <TextView
         android:id="@+id/textView11"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:text="kW"
-        android:textSize="18dp"
+        android:textSize="17dp"
         app:layout_constraintStart_toEndOf="@+id/array_power_input"
+        app:layout_constraintTop_toTopOf="@+id/array_power_input" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="2dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="2dp"
+        android:text="Measure"
+        android:textSize="13dp"
+        app:layout_constraintStart_toEndOf="@+id/check_opt_slope"
+        app:layout_constraintTop_toTopOf="@+id/panel_tilt_input" />
+
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="2dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="2dp"
+        android:text="Measure"
+        android:textSize="13dp"
+        app:layout_constraintStart_toEndOf="@+id/check_opt_azimuth"
+        app:layout_constraintTop_toTopOf="@+id/azimuth_input" />
+
+    <Button
+        android:id="@+id/compute_array"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Approximate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button5" />
+
+    <Button
+        android:id="@+id/apply_array"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableRight="@drawable/next"
+        android:text="Apply"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="8dp"
+        android:text="°"
+        android:textSize="19dp"
+        app:layout_constraintStart_toEndOf="@+id/panel_tilt_input"
+        app:layout_constraintTop_toTopOf="@+id/panel_tilt_input" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="3dp"
+        android:layout_marginTop="8dp"
+        android:text="°"
+        android:textSize="19dp"
+        app:layout_constraintStart_toEndOf="@+id/azimuth_input"
+        app:layout_constraintTop_toTopOf="@+id/azimuth_input" />
+
+    <CheckBox
+        android:id="@+id/check_opt_slope"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:checked="false"
+        android:text="optimize"
+        app:layout_constraintStart_toEndOf="@+id/textView9"
+        app:layout_constraintTop_toTopOf="@+id/button3" />
+
+    <CheckBox
+        android:id="@+id/check_opt_azimuth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:checked="false"
+        android:text="optimize"
+        app:layout_constraintStart_toEndOf="@+id/textView10"
+        app:layout_constraintTop_toBottomOf="@+id/button3" />
+
+    <CheckBox
+        android:id="@+id/check_opt_power"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:checked="false"
+        android:text="optimize"
+        app:layout_constraintStart_toEndOf="@+id/textView11"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_array"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="6dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/compute_array"
+        app:layout_constraintTop_toTopOf="@+id/compute_array" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

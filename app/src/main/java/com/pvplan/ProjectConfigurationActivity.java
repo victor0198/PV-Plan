@@ -1,21 +1,28 @@
 package com.pvplan;
 
+import android.Manifest;
 import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
@@ -39,6 +46,7 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
     TabLayout tabLayout;
     ViewPager2 viewPager2;
     ProjectConfigPageAdapter projectConfigPageAdapter;
+    static DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,59 +89,26 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
             }
         });
 
+//        tabLayout.getChildAt(0).setVisibility(View.INVISIBLE);
 
+        downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        registerReceiver(onComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
-//        makeTabWider(tabLayout, 0, 1.3f);
-//        makeTabWider(tabLayout, 1, 1.7f);
-//        makeTabWider(tabLayout, 2, 1.2f);
-//        makeTabWider(tabLayout, 3, 1.3f);
-//        makeTabWider(tabLayout, 4, 1.2f);
-
-
-        // use the text in a TextView
-//        TextView textView = (TextView) findViewById(R.id.id_p);
-//        textView.setText("id:" + projectId.toString());
-
-//        binding.locationLayout.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                startLocationSelector();
-//            }
-//        });
-//
-//        binding.locationBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                startLocationSelector();
-//            }
-//        });
-//
-//        binding.consumersBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(getApplicationContext(), ConsumersActivity.class);
-//                launcher.launch(intent);
-//            }
-//        });
-//
-//
-//        binding.resultsBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(getApplicationContext(), ResultsActivity.class);
-//                intent.putExtra("ProjectID", projectId.toString());
-//                launcher.launch(intent);
-//            }
-//        });
+        disableTab(tabLayout, 1);
+        disableTab(tabLayout, 2);
+        disableTab(tabLayout, 3);
+        disableTab(tabLayout, 4);
 
     }
 
-    private void makeTabWider(TabLayout tabLayout, int position, Float weight){
-        LinearLayout layout = ((LinearLayout) ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(position));
-        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) layout.getLayoutParams();
-        Log.d("weight",Float.valueOf(layoutParams.weight).toString());
-        layoutParams.weight = weight;
-        layout.setLayoutParams(layoutParams);
+    private void disableTab(TabLayout tabLayout, int position){
+         ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(position).setEnabled(false);
+         ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(position).setBackgroundColor(getResources().getColor(R.color.light_gray));
+    }
+
+    public void enableTab(TabLayout tabLayout, int position){
+        ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(position).setEnabled(true);
+        ((LinearLayout) tabLayout.getChildAt(0)).getChildAt(position).setBackgroundColor(getResources().getColor(R.color.transparent));
     }
 
     @Override
@@ -147,32 +122,22 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-//    private void startLocationSelector(){
-//        Intent intent = new Intent(getApplicationContext(), LocationActivity.class);
-//        intent.putExtra("ProjectID", projectId.toString());
-//        launcher.launch(intent);
-//    }
-//    ActivityResultLauncher<Intent> launcher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            new ActivityResultCallback<ActivityResult>() {
-//                @Override
-//                public void onActivityResult(ActivityResult result) {
-//                    if(result.getResultCode() == SECOND_ACTIVITY_REQUEST_CODE) {
-//                        Intent intent = result.getData();
-//                        if (intent!=null) {
-//                            Log.d("Project activity :", "received result from activity");
-//                        }
-//                    }
-//                }
-//            }
-//    );
-
-
     public void downloadDataAndSave(int projectId){
+
         DataBaseHelper dbh = new DataBaseHelper(this.getApplicationContext());
 
         uploadBriefData projectsListTask = new uploadBriefData(getApplicationContext(), dbh, projectId);
-        projectsListTask.execute();
+        projectsListTask.execute(2);
+    }
+
+    public void computeStorage() {
+        DataBaseHelper dbh = new DataBaseHelper(this.getApplicationContext());
+        Double lpd = dbh.getLowestPerfD(projectId);
+        ProjectModel tmpP = dbh.getProjectInfoById(projectId);
+        Double dischargeFactor = 1.66d;
+        Double storage = lpd * tmpP.getPower() / 0.7744d * dischargeFactor;
+        Log.d("OPTIMAL Storage", storage.toString());
+        dbh.updateOptimalStorage(projectId, Double.valueOf(storage*100).intValue()/100d);
     }
 
     private static class uploadBriefData extends AsyncTask<Integer, Integer, String> {
@@ -196,63 +161,78 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(Integer... integers) {
             // ...
-            Log.d("Async task", "Started");
-
-
+            Log.d("Async task", "Started. " + integers[0]);
             ProjectModel currProject = dbh.getProjectInfoById(projectId);
-            Uri file1Uri = Uri.parse("file://" + Environment.getExternalStorageDirectory() + "/PV/"+currProject.getLatitude()+" "+currProject.getLatitude()+".csv");
 
-            File file1download = new File(file1Uri.getPath());
-            Log.d("File1 path",file1Uri.getPath());
+            if(integers[0]==1 || (integers[0]==2 && !dbh.monthlyIsAvailable(projectId))) {
+                // download file 1
+                Uri file1Uri = Uri.parse("file://" + Environment.getExternalStorageDirectory() + "/PV/tmp/" + currProject.getLatitude() + " " + currProject.getLongitude() + ".csv");
+                Log.d("File1 path", file1Uri.getPath());
 
-            boolean file1Exists = false;
-
-            if(!file1download.exists()){
-                Log.d("File1 status", "does not exist, downloading");
-
-                Uri uri = Uri.parse("https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat="+currProject.getLatitude()+"&lon="+currProject.getLongitude()+"&raddatabase=PVGIS-SARAH2&browser=1&userhorizon=&usehorizon=1&outputformat=csv&js=1&select_database_grid=PVGIS-SARAH2&pvtechchoice=crystSi&peakpower=1&loss=14&mountingplace=free&optimalangles=1");
-
-                DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
-
-                DownloadManager.Request request = new DownloadManager.Request(uri);
-                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
-                request.setVisibleInDownloadsUi(false);
-                request.setDestinationUri(file1Uri);
-
-                downloadManager.enqueue(request);
-
-                int trials = 15;
-                while(trials>0){
-                    try {
-                        File file1downloaded = new File(file1Uri.getPath());
-                        if(!file1downloaded.exists()){
-                            Log.d("File1 status", "still not downloaded");
-                            Thread.sleep(1000);
-                            trials--;
-                        }else{
-                            Log.d("File1 status", "finished downloading!");
-                            file1Exists = true;
-                            break;
-                        }
+                File file1download = new File(file1Uri.getPath());
+                boolean file1Exists = true;
+                if (!file1download.exists()) {
+                    Log.d("File1 status", "does not exist, downloading");
+                    Uri uri = Uri.parse("https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&raddatabase=PVGIS-SARAH2&browser=1&userhorizon=&usehorizon=1&outputformat=csv&js=1&select_database_grid=PVGIS-SARAH2&pvtechchoice=crystSi&peakpower=1&loss=14&mountingplace=free&optimalangles=1");
+                    if (currProject.getSlope().equals("-1") || currProject.getAzimuth().equals("-181")){
+                        Log.d("File 1", "getting optimal angles");
+                    }else{
+                        uri = Uri.parse("https://re.jrc.ec.europa.eu/api/v5_2/PVcalc?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&raddatabase=PVGIS-SARAH2&browser=1&userhorizon=&usehorizon=1&outputformat=csv&js=1&select_database_grid=PVGIS-SARAH2&pvtechchoice=crystSi&peakpower=1&loss=14&mountingplace=free&angle=" +
+                                Double.valueOf(currProject.getSlope()).intValue() + "&aspect=" + Double.valueOf(currProject.getAzimuth()).intValue() );
+                        Log.d("File 1", "getting custom angles:" + Double.valueOf(currProject.getAzimuth()).intValue());
                     }
-                    catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    long dwn1Id = downloadFile(uri, file1Uri);
+                    file1Exists = checkDownloadComplete(file1Uri, 15, dwn1Id);
+                } else {
+                    Log.d("File1 status", "already exists");
                 }
 
-            }else{
-                file1Exists = true;
-                Log.d("File1 status", "already exists");
+                // upload file 1 into DB
+                if (file1Exists) {
+                    Log.d("FILE 1", "uploading to DB");
+                    uploadFile1Contents(file1Uri);
+                } else {
+                    Log.e("File 1", "NOT DOWNLOADED in ? seconds!");
+                }
+
+                File myObj = new File(file1Uri.getPath());
+                if (myObj.exists() && myObj.delete()) {
+                    Log.d("FILE 1","Deleted the file: " + myObj.getName());
+                } else {
+                    Log.d("FILE 1","Failed to delete the file.");
+                }
             }
 
-            if(file1Exists){
-                Log.d("FILE 1", "uploading to DB");
-                uploadFile1Contents(file1Uri);
+            if(integers[0]==2 && !dbh.tmyIsAvailable(projectId)) {
+                // download file 2
+                Uri file2Uri = Uri.parse("file://" + Environment.getExternalStorageDirectory() + "/PV/tmp/" + currProject.getLatitude() + " " + currProject.getLongitude() + " TMY.csv");
+                Log.d("File2 path", file2Uri.getPath());
 
-            }else{
-                Log.e("File 1", "NOT DOWNLOADED in ? seconds!");
+                File file2download = new File(file2Uri.getPath());
+                boolean file2Exists = true;
+
+                long dwn2Id = 0;
+                boolean wasDwn = false;
+                if (!file2download.exists()) {
+                    Log.d("File2 status", "does not exist, downloading");
+                    Uri uri = Uri.parse("https://re.jrc.ec.europa.eu/api/v5_2/tmy?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&usehorizon=1&browser=1&outputformat=csv&startyear=2005&endyear=2020&userhorizon=&js=1&period=1");
+                    wasDwn = true;
+                    dwn2Id = downloadFile(uri, file2Uri);
+                    file2Exists = checkDownloadComplete(file2Uri, 25, dwn2Id);
+                } else {
+                    Log.d("File2 status", "already exists");
+                }
+
+                // upload file 2 into DB
+                if (file2Exists) {
+                    Log.d("FILE 2", "uploading to DB");
+                    uploadFile2Contents(file2Uri);
+                    if (wasDwn)
+                        downloadManager.remove(dwn2Id);
+                } else {
+                    Log.e("File 2", "NOT DOWNLOADED in ? seconds!");
+                }
             }
-
 
             Log.d("Async task", "Finishing..");
             return "Finished!";
@@ -271,7 +251,37 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
             //
         }
 
+        public long downloadFile(Uri uri, Uri fileUri){
+            DownloadManager.Request request = new DownloadManager.Request(uri);
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
+            request.setVisibleInDownloadsUi(false);
+            request.setDestinationUri(fileUri);
+
+            return downloadManager.enqueue(request);
+        }
+
+        public boolean checkDownloadComplete(Uri fileUri, int waitSeconds, long dwnId){
+            while(waitSeconds>0){
+                try {
+                    File file1downloaded = new File(fileUri.getPath());
+                    if(!file1downloaded.exists()){
+                        Log.d("File status", "still not downloaded");
+                        Thread.sleep(1000);
+                        waitSeconds--;
+                    }else{
+                        Log.d("File status", "finished downloading!");
+                        return true;
+                    }
+                }
+                catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return false;
+        }
+
         public void uploadFile1Contents(Uri file1Uri){
+            dbh.deleteMonthly(projectId);
             try {
                 InputStream in = context.getContentResolver().openInputStream(file1Uri);
 
@@ -282,39 +292,86 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
                     String []s = line.split("\t");
 
                     if(line.contains("slope") && line.contains("optimum")){
-                        Log.d("optimal slope:",s[s.length-1]); //
-
+                        Double x = Double.parseDouble(s[s.length-1]);
+                        Log.d("optimal slope:", x.toString()); //
+                        dbh.setArraySlope(projectId, Double.parseDouble(s[s.length-1]));
                         continue;
                     }
 
                     if(line.contains("azimuth") && line.contains("optimum")){
-                        Log.d("optimal azimuth:",s[s.length-1]); //
-
+                        Double x = Double.parseDouble(s[s.length-1]);
+                        Log.d("optimal azimuth:", x.toString()); //
+                        dbh.setArrayAzimuth(projectId, Double.parseDouble(s[s.length-1]));
                         continue;
                     }
 
                     ArrayList<String> record = new ArrayList<>();
                     boolean is_start_line = false;
-                    for(int i=0; i<s.length; i++){
-                        if(s[i].equals("Month")){
-                            is_start_line = true;
-                            i++;
-                        }
-                        if(s[i].equals("Year")){
-                            nedded_data = false;
-                            break;
-                        }
-                        if(nedded_data){
+
+                    if(s[0].equals("Month")){
+                        is_start_line = true;
+                    }
+                    if(s[0].equals("Year")){
+                        nedded_data = false;
+                        break;
+                    }
+                    if(nedded_data) {
+
+                        for(int i=0; i<s.length; i++){
                             String value = s[i].replaceAll("\t","");
-                            if(!value.equals(""))
-                                record.add(value); //
+                            if(!value.isEmpty())
+                                record.add(value);
                         }
                     }
                     if(is_start_line){
                         nedded_data = true;
                     }
-                    if(!record.isEmpty())
+                    if(!record.isEmpty()){
                         Log.d("a line", record.toString());
+                        dbh.addMonthlyRecord(context, projectId,
+                                Integer.parseInt(record.get(0)),
+                                Double.parseDouble(record.get(1)),
+                                Double.parseDouble(record.get(2))
+                        );
+                    }
+                }
+
+            }catch (Exception e) {
+                e.printStackTrace();
+            }
+            ProjectModel updPM = dbh.getProjectInfoById(projectId);
+            dbh.addOptimalAngles(projectId, Double.parseDouble(updPM.getSlope()), Double.parseDouble(updPM.getAzimuth()));
+        }
+
+        public void uploadFile2Contents(Uri file2Uri){
+            dbh.deleteTMY(projectId);
+            try {
+                InputStream in = context.getContentResolver().openInputStream(file2Uri);
+
+                BufferedReader r = new BufferedReader(new InputStreamReader(in));
+
+                boolean nedded_data = false;
+                int read_lines = 20;
+                for (String line; (line = r.readLine()) != null && read_lines>0; ) {
+                    read_lines--;
+                    String []s = line.split(",");
+
+                    if(s[0].equals("month")){
+                        nedded_data = true;
+                        continue;
+                    }
+                    if(s[0].contains("time")){
+                        nedded_data = false;
+                        break;
+                    }
+                    if(nedded_data) {
+
+                        dbh.addTMYRecord(context, projectId,
+                                Integer.parseInt(s[0]),
+                                Integer.parseInt(s[1])
+                        );
+                        Log.d("tmy file data:", s[0]+":"+s[1]);
+                    }
                 }
 
             }catch (Exception e) {
@@ -322,5 +379,11 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
             }
         }
     }
+
+    BroadcastReceiver onComplete = new BroadcastReceiver() {
+        public void onReceive(Context ctxt, Intent intent) {
+            Log.d("download", "complete");
+        }
+    };
 
 }
