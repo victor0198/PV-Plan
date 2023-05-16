@@ -132,10 +132,11 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
 
     public void computeStorage() {
         DataBaseHelper dbh = new DataBaseHelper(this.getApplicationContext());
-        Double lpd = dbh.getLowestPerfD(projectId);
+        Double opd = dbh.getLowestPerfD(projectId);
+        Log.d("optimal perf. day ------", opd.toString());
         ProjectModel tmpP = dbh.getProjectInfoById(projectId);
         Double dischargeFactor = 1.66d;
-        Double storage = lpd * tmpP.getPower() / 0.7744d * dischargeFactor;
+        Double storage = opd * tmpP.getPower() / 0.7744d * dischargeFactor;
         Log.d("OPTIMAL Storage", storage.toString());
         dbh.updateOptimalStorage(projectId, Double.valueOf(storage*100).intValue()/100d);
         dbh.setBattery(projectId, Double.valueOf(storage*100).intValue()/100d);

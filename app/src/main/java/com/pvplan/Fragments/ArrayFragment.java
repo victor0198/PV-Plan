@@ -49,6 +49,7 @@ import com.pvplan.R;
 import com.pvplan.database.ConsumptionModel;
 import com.pvplan.database.DataBaseHelper;
 import com.pvplan.database.MonthlyBatteryModel;
+import com.pvplan.database.OptimalModel;
 import com.pvplan.database.ProjectModel;
 
 import java.io.BufferedReader;
@@ -99,6 +100,9 @@ public class ArrayFragment extends Fragment {
             double azimuth = Double.parseDouble(String.valueOf(azimuthInput.getText()));
             dbh.setArraySlope(projectId, slope);
             dbh.setArrayAzimuth(projectId, azimuth);
+
+
+            parentActivity.computeStorage();
 
             uploadBriefData projectsListTask = new uploadBriefData(parentActivity.getApplicationContext(), dbh, projectId);
             projectsListTask.execute(1);
@@ -219,8 +223,6 @@ public class ArrayFragment extends Fragment {
 
         v.findViewById(R.id.apply_array).setOnClickListener(view -> {
             Log.d("Array chosen", "..");
-            // TODO compute storage capacity
-            parentActivity.computeStorage();
 
             // move to array tab
             Log.d("Tabs switching", "moving from array to storage");
@@ -344,10 +346,15 @@ public class ArrayFragment extends Fragment {
             public String formatLabel(double value, boolean isValueX) {
                 if (isValueX) {
                     // show normal x values
-                    if(value<1)
-                        return "";
-                    else
-                        return months[Double.valueOf(value).intValue()-1];
+                    try{
+                        if(value<1)
+                            return "";
+                        else
+                            return months[Double.valueOf(value).intValue()-1];
+                    } catch (Exception e){
+
+                    }
+                    return "";
                 } else {
                     // show currency for y values
                     return super.formatLabel(value, isValueX) + " kW";
@@ -435,12 +442,15 @@ public class ArrayFragment extends Fragment {
             Log.d("WAITING-", "wait 3");
             actProg.setVisibility(View.INVISIBLE);
 
+            Double hcm = dbh.getHighestConsumptionMonth(projectId);
+            Double factor = hcm/(2000/12);
+            Log.d("FACTOR" , hcm.toString() +"|"+factor.toString());
             ConsumptionModel cm = dbh.getConsumption(projectId);
             Double WattsDay;
             if(cm.getEnergyUnit().equals("KW")){
-                WattsDay = cm.getValue()*1000;
+                WattsDay = factor*cm.getValue()*1000;
             }else{
-                WattsDay = cm.getValue();
+                WattsDay = factor*cm.getValue();
             }
             if(cm.getTimeUnit().equals("month")){
                 WattsDay = WattsDay /30;
@@ -451,7 +461,7 @@ public class ArrayFragment extends Fragment {
             Double lpd = dbh.getLowestPerfD(projectId);
             Log.d("----wpd", WattsDay.toString());
             Log.d("----lpd", lpd.toString());
-            Double neededP = WattsDay / lpd / 0.78;
+            Double neededP = WattsDay / lpd;
             Integer x = Double.valueOf(neededP/10).intValue();
             dbh.updateOptimalPower(projectId, x/100d);
             Log.d("WAITING-", "wait 4");
@@ -511,12 +521,16 @@ public class ArrayFragment extends Fragment {
             Log.d("WAITING-", "wait 5");
 
             // TODO FIX!
-            Integer batterySize = 15000;
             Double arrayPower = new Double(currProject.getPower()*1000);
             Log.d("PROJECT POWR", currProject.getPower().toString());
             Integer aP = arrayPower.intValue();
+            OptimalModel om = dbh.getOptimalById(projectId);
+            Log.d("battery ---- ",om.getS_power()+"kW");
+            Integer batterySize = Double.valueOf(Double.valueOf(om.getS_power())*1000d).intValue();
             Log.d("PROJECT POWR", aP.toString());
-            Integer consumptionDaily = 6000;
+//            Double hcm = dbh.getHighestConsumptionMonth(projectId);
+            Double cons = dbh.getConsumption(projectId).getValue();
+            Integer consumptionDaily = Double.valueOf(WattsDay).intValue();
 
             String url = "https://re.jrc.ec.europa.eu/api/v5_2/SHScalc?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&raddatabase=PVGIS-SARAH2&browser=1&outputformat=csv&userhorizon=&usehorizon=1&angle=" + Double.valueOf(currProject.getSlope()).intValue() + "&aspect=" + Double.valueOf(currProject.getAzimuth()).intValue() + "&peakpower=" + aP.toString() + "&hourconsumptionfile=&js=1&select_database_offgrid=PVGIS-SARAH2&ipeakpower=" + aP.toString() + "&batterysize=" + batterySize + "&cutoff=40&consumptionday=" + consumptionDaily + "&shsangle=" + Double.valueOf(currProject.getSlope()).intValue() + "&shsaspect=" + Double.valueOf(currProject.getAzimuth()).intValue();
 
@@ -683,7 +697,7 @@ public class ArrayFragment extends Fragment {
 //                    ArrayList<String> record = new ArrayList<>();
 //                    boolean is_start_line = false;
 //
-                    Log.d("GRID s[0]", s[0]);
+//                    Log.d("GRID s[0]", s[0]);
                     if(s[0].equals("month")){
                         nedded_data = true;
                         continue;
@@ -696,10 +710,10 @@ public class ArrayFragment extends Fragment {
 
                         for(int j=0; j<s.length; j++){
                             String value = s[j].replaceAll("\t","");
-                            Log.d("grid file data:", value);
+//                            Log.d("grid file data:", value);
 
                         }
-                        Log.d("grid file data:", s[0]+"|"+s[2]+"|"+s[4]+"|"+s[6]+"|"+s[8]);
+//                        Log.d("grid file data:", s[0]+"|"+s[2]+"|"+s[4]+"|"+s[6]+"|"+s[8]);
                         MonthlyBatteryModel tmp = new MonthlyBatteryModel(projectId,
                                 Integer.parseInt(s[0]),
                                 Double.parseDouble(s[2]),

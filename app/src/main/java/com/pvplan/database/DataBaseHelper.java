@@ -639,7 +639,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     float value = cursor.getFloat(2);
-                    Log.d("Daily profile data","Got:"+value);
+//                    Log.d("Daily profile data","Got:"+value);
                     dailyProfile.add(value);
                 } while (cursor.moveToNext());
             }
@@ -664,7 +664,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     float value = cursor.getFloat(2);
-                    Log.d("Monthly profile data","Got:"+value);
+//                    Log.d("Monthly profile data","Got:"+value);
                     dailyProfile.add(value);
                 } while (cursor.moveToNext());
             }
@@ -819,7 +819,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         cursor.close();
         dbRead.close();
 
-
         SQLiteDatabase db = this.getWritableDatabase();
         for (MonthlyBatteryModel amb : mb){
             ContentValues cv = new ContentValues();
@@ -854,14 +853,39 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return 1d;
     }
 
-    public Double getLowestPerfM(int projectId) {
+    public Double getOptimalPerformaceDay(int projectId) {
         SQLiteDatabase dbRead = this.getReadableDatabase();
-        String getProjectQuery = "SELECT * FROM monthly_data WHERE project_id = " + projectId + " ORDER BY W_month ASC";
+        String getProjectQuery = "SELECT SUM(W_day)/3 FROM " +
+                "(" +
+                "SELECT * FROM (SELECT monthly_data.W_day FROM monthly_data WHERE project_id = " + projectId + " ORDER BY W_day DESC LIMIT 1) as t1" +
+                " UNION " +
+                "SELECT * FROM (SELECT monthly_data.W_day FROM monthly_data WHERE project_id = " + projectId + " ORDER BY W_day ASC LIMIT 1) as t2 " +
+                ") ";
         Cursor cursor = dbRead.rawQuery(getProjectQuery, null);
 
         if (cursor.moveToFirst()) {
             do {
-                Double value = cursor.getDouble(2);
+                Double value = cursor.getDouble(0);
+                return value;
+            } while (cursor.moveToNext());
+
+        }
+
+        return 1d;
+    }
+
+    public Double getHighestConsumptionMonth(int projectId) {
+        SQLiteDatabase dbRead = this.getReadableDatabase();
+        String getProjectQuery = "SELECT value FROM monthly_profile " +
+                "INNER JOIN (SELECT profile_id FROM consumption WHERE project_id = " + projectId + ") as tmp " +
+                "ON monthly_profile.profile_id = tmp.profile_id " +
+                "ORDER BY monthly_profile.value DESC " +
+                "LIMIT 1";
+        Cursor cursor = dbRead.rawQuery(getProjectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Double value = cursor.getDouble(0);
                 return value;
             } while (cursor.moveToNext());
 

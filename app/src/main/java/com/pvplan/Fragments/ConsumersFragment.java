@@ -207,12 +207,15 @@ public class ConsumersFragment extends Fragment {
                     powerUnits[power_selected], timeUnits[time_selected],
                     month_selected+1, profiles.get(profile_selected).getId());
 
+            Double hcm = dbh.getHighestConsumptionMonth(projectId);
+            Double factor = hcm*12/2000;
+            Log.d("FACTOR" , factor.toString());
             ConsumptionModel cm = dbh.getConsumption(projectId);
             Double WattsDay;
             if(cm.getEnergyUnit().equals("KW")){
-                WattsDay = cm.getValue()*1000;
+                WattsDay = factor*cm.getValue()*1000;
             }else{
-                WattsDay = cm.getValue();
+                WattsDay = factor*cm.getValue();
             }
             if(cm.getTimeUnit().equals("month")){
                 WattsDay = WattsDay /30;
@@ -223,7 +226,7 @@ public class ConsumersFragment extends Fragment {
             Double lpd = dbh.getLowestPerfD(projectId);
             Log.d("----wpd", WattsDay.toString());
             Log.d("----lpd", lpd.toString());
-            Double neededP = WattsDay / lpd / 0.78;
+            Double neededP = WattsDay / lpd;
             Integer x = Double.valueOf(neededP/10).intValue();
             dbh.updateOptimalPower(projectId, x/100d);
             dbh.setPower(projectId, x/100d);
@@ -346,7 +349,7 @@ public class ConsumersFragment extends Fragment {
         int month = 1;
         for (Float value :
                 profileMonthly) {
-            seriesMonths.appendData(new DataPoint(month, value/180*WattsDay/1000*30), true, 12);
+            seriesMonths.appendData(new DataPoint(month, value/166.6d*WattsDay/1000*30), true, 12);
             month += 1;
         }
         graphViewM.addSeries(seriesMonths);
@@ -401,21 +404,21 @@ public class ConsumersFragment extends Fragment {
             Log.d("Async task", "Started. ");
             ProjectModel currProject = dbh.getProjectInfoById(projectId);
 
-            // TODO compute suggested battery size
-            Integer batterySize = 15000;
-
             Double arrayPower = new Double(currProject.getPower()*1000);
             Log.d("PROJECT POWR", currProject.getPower().toString());
             Integer aP = arrayPower.intValue();
             Log.d("PROJECT POWR", aP.toString());
 
 
+            Double hcm = dbh.getHighestConsumptionMonth(projectId);
+            Double factor = hcm/(2000/12);
+            Log.d("FACTOR" , hcm.toString() +"|"+factor.toString());
             ConsumptionModel cm = dbh.getConsumption(projectId);
             Double WattsDay;
             if(cm.getEnergyUnit().equals("KW")){
-                WattsDay = cm.getValue()*1000;
+                WattsDay = factor*cm.getValue()*1000;
             }else{
-                WattsDay = cm.getValue();
+                WattsDay = factor*cm.getValue();
             }
             if(cm.getTimeUnit().equals("month")){
                 WattsDay = WattsDay /30;
@@ -425,6 +428,9 @@ public class ConsumersFragment extends Fragment {
             }
             Log.d("WATTS/D", WattsDay.toString());
             Integer consumptionDaily = Double.valueOf(WattsDay).intValue();
+
+            // TODO compute suggested battery size
+            Integer batterySize = Double.valueOf(consumptionDaily*2.5).intValue();
 
             String url = "https://re.jrc.ec.europa.eu/api/v5_2/SHScalc?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&raddatabase=PVGIS-SARAH2&browser=1&outputformat=csv&userhorizon=&usehorizon=1&angle=" + Double.valueOf(currProject.getSlope()).intValue() + "&aspect=" + Double.valueOf(currProject.getAzimuth()).intValue() + "&peakpower=" + aP.toString() + "&hourconsumptionfile=&js=1&select_database_offgrid=PVGIS-SARAH2&ipeakpower=" + aP.toString() + "&batterysize=" + batterySize + "&cutoff=40&consumptionday=" + consumptionDaily + "&shsangle=" + Double.valueOf(currProject.getSlope()).intValue() + "&shsaspect=" + Double.valueOf(currProject.getAzimuth()).intValue();
 
@@ -464,8 +470,8 @@ public class ConsumersFragment extends Fragment {
 
 
             // TODO compute optimal storage size
-            dbh.updateOptimalStorage(projectId, 0d);
-            dbh.setBattery(projectId, 0d);
+//            dbh.updateOptimalStorage(projectId, 0d);
+//            dbh.setBattery(projectId, 0d);
 
             Log.d("Async task", string);
             //
@@ -481,7 +487,7 @@ public class ConsumersFragment extends Fragment {
                 for (int i = 0; i<lines.length;i++ ) {
                     String []s = lines[i].split("\t");
 
-                    Log.d("GRID s[0]", s[0]);
+//                    Log.d("GRID s[0]", s[0]);
                     if(s[0].equals("month")){
                         nedded_data = true;
                         continue;
@@ -494,10 +500,10 @@ public class ConsumersFragment extends Fragment {
 
                         for(int j=0; j<s.length; j++){
                             String value = s[j].replaceAll("\t","");
-                            Log.d("grid file data:", value);
+//                            Log.d("grid file data:", value);
 
                         }
-                        Log.d("grid file data:", s[0]+"|"+s[2]+"|"+s[4]+"|"+s[6]+"|"+s[8]);
+//                        Log.d("grid file data:", s[0]+"|"+s[2]+"|"+s[4]+"|"+s[6]+"|"+s[8]);
                         MonthlyBatteryModel tmp = new MonthlyBatteryModel(projectId,
                                 Integer.parseInt(s[0]),
                                 Double.parseDouble(s[2]),

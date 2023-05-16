@@ -16,28 +16,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
+import android.widget.ScrollView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.LegendRenderer;
-import com.jjoe64.graphview.ValueDependentColor;
 import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
 import com.pvplan.ProjectConfigurationActivity;
 import com.pvplan.R;
 import com.pvplan.database.DataBaseHelper;
 import com.pvplan.database.MonthlyBatteryModel;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class StorageFragment extends Fragment {
     private final static int RESULTS_TAB_POSITION = 4;
@@ -154,6 +149,8 @@ public class StorageFragment extends Fragment {
             parentActivity.enableTab(tabLayout, RESULTS_TAB_POSITION);
             viewPager2.setCurrentItem(RESULTS_TAB_POSITION);
             tabLayout.getTabAt(RESULTS_TAB_POSITION).select();
+            HorizontalScrollView prsv = parentActivity.findViewById(R.id.horizontalScrollViewPr);
+            prsv.fullScroll(View.FOCUS_RIGHT);
         });
 
 //        graphViewM.setTitle("Percentage of days with this charge state");
@@ -216,9 +213,9 @@ public class StorageFragment extends Fragment {
         series.setSpacing(35);
         series.setAnimated(true);
         graphViewM.addSeries(series);
-        graphViewM.setTitle("Amount of days when reached the state of charge");
+        graphViewM.setTitle("Percentage of days when reached the state of charge");
         graphViewM.setTitleColor(R.color.purple_200);
-        graphViewM.setTitleTextSize(45);
+        graphViewM.setTitleTextSize(40);
 
         BarGraphSeries<DataPoint> series2 = new BarGraphSeries<>(new DataPoint[] {});
         month = 1;
