@@ -120,7 +120,7 @@
             <com.jjoe64.graphview.GraphView
                 android:id="@+id/mothly_consumption_profile_graph"
                 android:layout_width="match_parent"
-                android:layout_height="230dp"
+                android:layout_height="220dp"
                 android:layout_alignParentTop="true"
                 android:layout_marginTop="8dp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -134,8 +134,9 @@
         android:id="@+id/apply_consumption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableRight="@drawable/next"
+        android:backgroundTint="#2D883B"
         android:text="Apply"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

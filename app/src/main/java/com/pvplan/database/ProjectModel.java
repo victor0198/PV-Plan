@@ -4,15 +4,17 @@ public class ProjectModel {
     private int id;
     private String name;
     private Double power;
+    private Double battery;
     private String latitude;
     private String longitude;
     private String slope;
     private String azimuth;
 
-    public ProjectModel(int id, String name, Double power, String latitude, String longitude, String slope, String azimuth) {
+    public ProjectModel(int id, String name, Double power, Double battery, String latitude, String longitude, String slope, String azimuth) {
         this.id = id;
         this.name = name;
         this.power = power;
+        this.battery = battery;
         this.latitude = latitude;
         this.longitude = longitude;
         this.slope = slope;
@@ -48,6 +50,14 @@ public class ProjectModel {
 
     public Double getPower() {
         return power;
+    }
+
+    public Double getBattery() {
+        return battery;
+    }
+
+    public void setBattery(Double battery) {
+        this.battery = battery;
     }
 
     public void setPower(Double power) {

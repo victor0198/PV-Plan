@@ -138,6 +138,7 @@ public class ProjectConfigurationActivity extends AppCompatActivity {
         Double storage = lpd * tmpP.getPower() / 0.7744d * dischargeFactor;
         Log.d("OPTIMAL Storage", storage.toString());
         dbh.updateOptimalStorage(projectId, Double.valueOf(storage*100).intValue()/100d);
+        dbh.setBattery(projectId, Double.valueOf(storage*100).intValue()/100d);
     }
 
     private static class uploadBriefData extends AsyncTask<Integer, Integer, String> {

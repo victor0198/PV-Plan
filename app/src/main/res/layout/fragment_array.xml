@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".Fragments.ArrayFragment">
 
+    <View
+        android:id="@+id/view2"
+        android:layout_width="30dp"
+        android:layout_height="3dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:background="#0D448F"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/graph_pv_year" />
+
     <EditText
         android:id="@+id/panel_tilt_input"
         android:layout_width="45dp"
@@ -59,7 +69,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:ems="10"
-        android:inputType="number|numberSigned"
+        android:inputType="number"
         app:layout_constraintStart_toEndOf="@+id/azimuth_angle"
         app:layout_constraintTop_toBottomOf="@+id/panel_tilt_input" />
 
@@ -125,10 +135,14 @@
 
     <Button
         android:id="@+id/compute_array"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="190dp"
+        android:layout_height="45dp"
         android:layout_marginTop="16dp"
+        android:drawableRight="@drawable/stats_22"
+        android:drawablePadding="30dp"
+        android:enabled="true"
         android:text="Approximate"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button5" />
@@ -137,8 +151,9 @@
         android:id="@+id/apply_array"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableRight="@drawable/next"
+        android:backgroundTint="#2D883B"
         android:text="Apply"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -206,5 +221,58 @@
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/compute_array"
         app:layout_constraintTop_toTopOf="@+id/compute_array" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="PV array production"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/view2"
+        app:layout_constraintTop_toBottomOf="@+id/graph_pv_year" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="30dp"
+        android:layout_height="3dp"
+        android:layout_marginStart="176dp"
+        android:layout_marginTop="16dp"
+        android:background="#3BCB39"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/graph_pv_year" />
+
+    <View
+        android:id="@+id/view3"
+        android:layout_width="30dp"
+        android:layout_height="3dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="16dp"
+        android:background="#CB2626"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view" />
+
+    <TextView
+        android:id="@+id/textView12"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Usable energy"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/graph_pv_year" />
+
+    <TextView
+        android:id="@+id/textView13"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="5dp"
+        android:text="Consumption"
+        android:textSize="12sp"
+        app:layout_constraintStart_toEndOf="@+id/view3"
+        app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

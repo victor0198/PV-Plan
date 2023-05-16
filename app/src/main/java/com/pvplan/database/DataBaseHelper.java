@@ -24,6 +24,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public final String PROJECTS_ID = "id";
     public final String PROJECTS_NAME = "name";
     public final String PROJECTS_POWER = "power";
+    public final String PROJECTS_BATTERY = "battery";
     public final String PROJECTS_LAT = "latitude";
     public final String PROJECTS_LON = "longitude";
     public final String PROJECTS_SLOPE = "slope";
@@ -89,7 +90,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         String createProjectsTable = "CREATE TABLE " + PROJECTS_TABLE +
                 " (" + PROJECTS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 PROJECTS_NAME + " TEXT, " +
-                PROJECTS_POWER + " INTEGER, " +
+                PROJECTS_POWER + " REAL, " +
+                PROJECTS_BATTERY + " REAL, " +
                 PROJECTS_LAT + " REAL, " +
                 PROJECTS_LON + " REAL, " +
                 PROJECTS_SLOPE + " REAL, " +
@@ -266,6 +268,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         cv.put(PROJECTS_NAME, projectName);
         cv.put(PROJECTS_POWER, power);
+        cv.put(PROJECTS_BATTERY, "0");
         cv.put(PROJECTS_LAT, "-181.0");
         cv.put(PROJECTS_LON, "-181.0");
         cv.put(PROJECTS_SLOPE, "-1.0");
@@ -293,14 +296,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 int projectId = cursor.getInt(0);
                 String name = cursor.getString(1);
                 Double power = cursor.getDouble(2);
-                String latitude = cursor.getString(3);
-                String longitude = cursor.getString(4);
-                String slope = cursor.getString(5);
-                String azimuth = cursor.getString(6);
+                Double battery = cursor.getDouble(3);
+                String latitude = cursor.getString(4);
+                String longitude = cursor.getString(5);
+                String slope = cursor.getString(6);
+                String azimuth = cursor.getString(7);
                 ProjectModel credential = new ProjectModel(
                         projectId,
                         name,
                         power,
+                        battery,
                         latitude,
                         longitude,
                         slope,
@@ -327,14 +332,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 int projectId = cursor.getInt(0);
                 String name = cursor.getString(1);
                 Double power = cursor.getDouble(2);
-                String latitude = cursor.getString(3);
-                String longitude = cursor.getString(4);
-                String slope = cursor.getString(5);
-                String azimuth = cursor.getString(6);
+                Double battery = cursor.getDouble(3);
+                String latitude = cursor.getString(4);
+                String longitude = cursor.getString(5);
+                String slope = cursor.getString(6);
+                String azimuth = cursor.getString(7);
                 ProjectModel project = new ProjectModel(
                         projectId,
                         name,
                         power,
+                        battery,
                         latitude,
                         longitude,
                         slope,
@@ -348,7 +355,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         }
 
-        return new ProjectModel(-1, "No project", 0d, Long.toString((long) -181.0), Long.toString((long) -181.0), Long.toString((long) -1.0), Long.toString((long) -181.0));
+        return new ProjectModel(-1, "No project", 0d, 0d, Long.toString((long) -181.0), Long.toString((long) -181.0), Long.toString((long) -1.0), Long.toString((long) -181.0));
     }
 
 
@@ -613,7 +620,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
         }
 
-        return new ConsumptionModel(1, 2000d, "KW", "year", 1, 1);
+        return new ConsumptionModel(0, 0d, "KW", "year", 1, 1);
     }
 
     // getConsumptionData (int project_id)
@@ -789,6 +796,17 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
+    public boolean setBattery(int projectId, double battery_p) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        String setBatteryQuery = "UPDATE " + PROJECTS_TABLE +
+                " SET " + PROJECTS_BATTERY + " = " + battery_p +
+                " WHERE " + PROJECTS_TABLE +  "." + PROJECTS_ID + " = " + projectId;
+        db.execSQL(setBatteryQuery);
+
+        db.close();
+        return true;
+    }
+
     public boolean applyMonthlyBattery(int project_id, ArrayList<MonthlyBatteryModel> mb) {
         SQLiteDatabase dbRead = this.getWritableDatabase();
         String getConsumptionQuery = "DELETE FROM " + M_B_TABLE +
@@ -823,6 +841,22 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public Double getLowestPerfD(int projectId) {
         SQLiteDatabase dbRead = this.getReadableDatabase();
         String getProjectQuery = "SELECT * FROM monthly_data WHERE project_id = " + projectId + " ORDER BY W_day ASC";
+        Cursor cursor = dbRead.rawQuery(getProjectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Double value = cursor.getDouble(2);
+                return value;
+            } while (cursor.moveToNext());
+
+        }
+
+        return 1d;
+    }
+
+    public Double getLowestPerfM(int projectId) {
+        SQLiteDatabase dbRead = this.getReadableDatabase();
+        String getProjectQuery = "SELECT * FROM monthly_data WHERE project_id = " + projectId + " ORDER BY W_month ASC";
         Cursor cursor = dbRead.rawQuery(getProjectQuery, null);
 
         if (cursor.moveToFirst()) {

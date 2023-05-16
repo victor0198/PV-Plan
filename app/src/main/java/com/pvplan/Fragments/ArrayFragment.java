@@ -4,6 +4,7 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -119,15 +120,18 @@ public class ArrayFragment extends Fragment {
                                       int before, int count) {
                 if(s.length() != 0){
                     try{
-                        double multiplier = Double.parseDouble(panelsPower.getText().toString());
+                        Double multiplier = Double.parseDouble(panelsPower.getText().toString());
                         Log.d("Panels power", multiplier + "kW");
                         dbh.setPower(projectId, multiplier);
                         Double p = Double.parseDouble(dbh.getOptimalById(projectId).getP_power());
+                        Log.d("mul", multiplier.toString());
+                        Log.d("p", p.toString());
                         CheckBox P_powerChkBx = (CheckBox) v.findViewById( R.id.check_opt_power );
                         String strMultiplier = panelsPower.getText().toString();
-                        if((p!=multiplier || strMultiplier.endsWith(".")) && P_powerChkBx.isChecked()){
+                        if((p!=multiplier || strMultiplier.endsWith("."))){
                             P_powerChkBx.setChecked(false);
-                        }else if((p==multiplier || !strMultiplier.endsWith(".")) && !P_powerChkBx.isChecked()){
+                        }
+                        if((p==multiplier || !strMultiplier.endsWith("."))){
                             P_powerChkBx.setChecked(true);
                         }
                         refreshUI();
@@ -226,16 +230,16 @@ public class ArrayFragment extends Fragment {
         });
 
         CheckBox P_powerChkBx = (CheckBox) v.findViewById( R.id.check_opt_power );
-//        P_powerChkBx.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//            if ( isChecked )
-//            {
-//                EditText panelsPower1 = v.findViewById(R.id.array_power_input);
-//                Double p = Double.parseDouble(dbh.getOptimalById(projectId).getP_power());
-//                dbh.setPower(projectId, p);
-//                panelsPower1.setText(p.toString());
-//            }
-//
-//        });
+        P_powerChkBx.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if ( isChecked )
+            {
+                EditText panelsPower1 = v.findViewById(R.id.array_power_input);
+                Double p = Double.parseDouble(dbh.getOptimalById(projectId).getP_power());
+                dbh.setPower(projectId, p);
+                panelsPower1.setText(p.toString());
+            }
+
+        });
 
         CheckBox slopeChkBx = (CheckBox) v.findViewById( R.id.check_opt_slope );
         slopeChkBx.setOnCheckedChangeListener((buttonView, isChecked) -> {
@@ -275,8 +279,10 @@ public class ArrayFragment extends Fragment {
         Log.d("Refresh UI", "from array fragment");
         ProjectModel pm = dbh.getProjectInfoById(projectId);
         EditText tilt = v.findViewById(R.id.panel_tilt_input);
+        Log.d("TILT", pm.getSlope());
         tilt.setText(pm.getSlope());
         EditText azimuth = v.findViewById(R.id.azimuth_input);
+        Log.d("AZIM", pm.getAzimuth());
         azimuth.setText(pm.getAzimuth());
 
         EditText panelsPower = v.findViewById(R.id.array_power_input);
@@ -288,9 +294,9 @@ public class ArrayFragment extends Fragment {
 //        ArrayList<Float> profileMonthly = dbh.getMonthlyProfile(projectId);
 
         graphViewM.removeAllSeries();
-        graphViewM.setTitle("Monthly energy production");
+        graphViewM.setTitle("Monthly energy production and consumption");
         graphViewM.setTitleColor(R.color.purple_200);
-        graphViewM.setTitleTextSize(45);
+        graphViewM.setTitleTextSize(40);
         LineGraphSeries<DataPoint> seriesMonths = new LineGraphSeries<DataPoint>(new DataPoint[]{});
         int month = 1;
         for (Float value :
@@ -300,10 +306,37 @@ public class ArrayFragment extends Fragment {
         }
         graphViewM.addSeries(seriesMonths);
         seriesMonths.setAnimated(true);
+
+        LineGraphSeries<DataPoint> seriesMonthsIdeal = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+        month = 1;
+        for (Float value :
+                monthlyData) {
+            seriesMonthsIdeal.appendData(new DataPoint(month, value*power*0.85), true, 12);
+            month += 1;
+        }
+        graphViewM.addSeries(seriesMonthsIdeal);
+        seriesMonthsIdeal.setColor(Color.argb(255,30,200,30));
+        seriesMonthsIdeal.setAnimated(true);
+
+        ConsumptionModel cm = dbh.getConsumption(projectId);
+        // TODO works only with KW/year
+        Double kWattsMonth = cm.getValue()/12;
+        ArrayList<Float> profileMonthly = dbh.getMonthlyProfile(1);
+        LineGraphSeries<DataPoint> seriesMonths2 = new LineGraphSeries<DataPoint>(new DataPoint[]{});
+        month = 1;
+        for (Float value :
+                profileMonthly) {
+            seriesMonths2.appendData(new DataPoint(month, value/180*kWattsMonth), true, 12);
+            month += 1;
+        }
+        graphViewM.addSeries(seriesMonths2);
+        seriesMonths2.setColor(Color.RED);
+        seriesMonths2.setAnimated(true);
+
         graphViewM.getViewport().setMinX(0.5);
         graphViewM.getViewport().setMaxX(12.5);
-        graphViewM.getViewport().setMinY(0);
-//        graphViewM.getViewport().setMaxY(Double.valueOf(Collections.max(profileMonthly))*1.1);
+        graphViewM.getViewport().setMinY(0d);
+        graphViewM.getViewport().setMaxY(Double.valueOf(Collections.max(monthlyData))*power*1.1);
         graphViewM.getViewport().setYAxisBoundsManual(true);
         graphViewM.getViewport().setXAxisBoundsManual(true);
         graphViewM.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
@@ -311,7 +344,10 @@ public class ArrayFragment extends Fragment {
             public String formatLabel(double value, boolean isValueX) {
                 if (isValueX) {
                     // show normal x values
-                    return months[Double.valueOf(value).intValue()];
+                    if(value<1)
+                        return "";
+                    else
+                        return months[Double.valueOf(value).intValue()-1];
                 } else {
                     // show currency for y values
                     return super.formatLabel(value, isValueX) + " kW";
@@ -369,7 +405,12 @@ public class ArrayFragment extends Fragment {
             } else {
                 Log.d("File1 status", "already exists");
             }
-
+            try {
+                Thread.sleep(100);
+                Log.d("WAITING-", "wait 1");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             // upload file 1 into DB
             if (file1Exists) {
                 Log.d("FILE 1", "uploading to DB");
@@ -378,7 +419,12 @@ public class ArrayFragment extends Fragment {
             } else {
                 Log.e("File 1", "NOT DOWNLOADED in ? seconds!");
             }
-
+            try {
+                Thread.sleep(100);
+                Log.d("WAITING-", "wait 2");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             publishProgress(80);
             File myObj = new File(file1Uri.getPath());
             if (myObj.exists() && myObj.delete()) {
@@ -386,7 +432,7 @@ public class ArrayFragment extends Fragment {
             } else {
                 Log.d("FILE 1","Failed to delete the file.");
             }
-//
+            Log.d("WAITING-", "wait 3");
             actProg.setVisibility(View.INVISIBLE);
 
             ConsumptionModel cm = dbh.getConsumption(projectId);
@@ -405,11 +451,18 @@ public class ArrayFragment extends Fragment {
             Double lpd = dbh.getLowestPerfD(projectId);
             Log.d("----wpd", WattsDay.toString());
             Log.d("----lpd", lpd.toString());
-            Double neededP = WattsDay / lpd;
+            Double neededP = WattsDay / lpd / 0.78;
             Integer x = Double.valueOf(neededP/10).intValue();
             dbh.updateOptimalPower(projectId, x/100d);
+            Log.d("WAITING-", "wait 4");
 
-            refreshUI();
+//            refreshUI();
+//            try {
+//                Log.d("WAITING-", "wait ");
+//                Thread.sleep(3000);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            }
             Log.d("CHANGING", "panel power");
             CheckBox cb = v.findViewById(R.id.check_opt_power);
             if(cb.isChecked()){
@@ -455,13 +508,15 @@ public class ArrayFragment extends Fragment {
 //            } else {
 //                Log.e("File 2", "NOT DOWNLOADED in ? seconds!");
 //            }
+            Log.d("WAITING-", "wait 5");
+
             // TODO FIX!
-            Integer batterySize = 5000;
+            Integer batterySize = 15000;
             Double arrayPower = new Double(currProject.getPower()*1000);
             Log.d("PROJECT POWR", currProject.getPower().toString());
             Integer aP = arrayPower.intValue();
             Log.d("PROJECT POWR", aP.toString());
-            Integer consumptionDaily = 3000;
+            Integer consumptionDaily = 6000;
 
             String url = "https://re.jrc.ec.europa.eu/api/v5_2/SHScalc?lat=" + currProject.getLatitude() + "&lon=" + currProject.getLongitude() + "&raddatabase=PVGIS-SARAH2&browser=1&outputformat=csv&userhorizon=&usehorizon=1&angle=" + Double.valueOf(currProject.getSlope()).intValue() + "&aspect=" + Double.valueOf(currProject.getAzimuth()).intValue() + "&peakpower=" + aP.toString() + "&hourconsumptionfile=&js=1&select_database_offgrid=PVGIS-SARAH2&ipeakpower=" + aP.toString() + "&batterysize=" + batterySize + "&cutoff=40&consumptionday=" + consumptionDaily + "&shsangle=" + Double.valueOf(currProject.getSlope()).intValue() + "&shsaspect=" + Double.valueOf(currProject.getAzimuth()).intValue();
 

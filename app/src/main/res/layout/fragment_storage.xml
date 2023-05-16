@@ -38,7 +38,7 @@
         android:id="@+id/battery_chemistry"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="70dp"
+        android:layout_marginStart="50dp"
         android:layout_marginTop="26dp"
         android:text="Type"
         android:textSize="16dp"
@@ -48,13 +48,35 @@
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph_battery"
         android:layout_width="0dp"
-        android:layout_height="300dp"
+        android:layout_height="250dp"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@+id/battery_capacity_input" />
+
+    <Button
+        android:id="@+id/compute_storage"
+        android:layout_width="190dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="16dp"
+        android:drawableRight="@drawable/stats_22"
+        android:drawablePadding="30dp"
+        android:text="Approximate"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/approximate_storage" />
+        app:layout_constraintTop_toBottomOf="@+id/graph_battery" />
+
+
+    <!--    <com.jjoe64.graphview.GraphView-->
+<!--        android:id="@+id/graph_battery_2"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="250dp"-->
+<!--        android:layout_alignParentTop="true"-->
+<!--        android:layout_marginTop="8dp"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/graph_battery" />-->
 
     <Spinner
         android:id="@+id/spinner_capacity"
@@ -102,24 +124,25 @@
         android:id="@+id/apply_storage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableRight="@drawable/next"
+        android:backgroundTint="#2D883B"
         android:text="Results"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/approximate_storage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="75dp"
-        android:text="Approximate"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/battery_capacity_input" />
+<!--    <Button-->
+<!--        android:id="@+id/approximate_storage"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginTop="75dp"-->
+<!--        android:text="Approximate"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/battery_capacity_input" />-->
 
     <CheckBox
-        android:id="@+id/checkBox"
+        android:id="@+id/optimize_b"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="7dp"

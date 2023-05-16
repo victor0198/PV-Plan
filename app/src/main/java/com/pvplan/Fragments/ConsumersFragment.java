@@ -6,6 +6,7 @@ import static java.lang.Math.round;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -72,7 +73,7 @@ public class ConsumersFragment extends Fragment {
     int time_selected = 0;
     int month_selected = 0;
     ArrayList<ProfileModel> profiles;
-    double multiplier = 2000;
+    double multiplier = 0;
     static View v;
 
     public ConsumersFragment(ProjectConfigurationActivity parentActivity, int projectId, TabLayout tabLayout, ViewPager2 viewPager2) {
@@ -102,7 +103,22 @@ public class ConsumersFragment extends Fragment {
         }
 
         EditText energyInput = v.findViewById(R.id.energy_value);
-        energyInput.setText("2000");
+        ConsumptionModel cm_show = dbh.getConsumption(projectId);
+
+        if(cm_show.getProjectId() == 0){
+            energyInput.setText("2000");
+            multiplier = 2000;
+        }else{
+            Double value = cm_show.getValue();
+            if (cm_show.getEnergyUnit().equals("W"))
+                value *= 1000d;
+            if (cm_show.getTimeUnit().equals("month"))
+                value *= 12d;
+            if (cm_show.getTimeUnit().equals("day"))
+                value *= 365d;
+            energyInput.setText(value.toString());
+            multiplier = value;
+        }
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, items);
         adapter.setDropDownViewResource(android.R.layout.simple_list_item_single_choice);
@@ -207,7 +223,7 @@ public class ConsumersFragment extends Fragment {
             Double lpd = dbh.getLowestPerfD(projectId);
             Log.d("----wpd", WattsDay.toString());
             Log.d("----lpd", lpd.toString());
-            Double neededP = WattsDay / lpd;
+            Double neededP = WattsDay / lpd / 0.78;
             Integer x = Double.valueOf(neededP/10).intValue();
             dbh.updateOptimalPower(projectId, x/100d);
             dbh.setPower(projectId, x/100d);
@@ -299,6 +315,7 @@ public class ConsumersFragment extends Fragment {
             hour += 1;
         }
         graphView.addSeries(series);
+        series.setColor(Color.RED);
         series.setAnimated(true);
 
 //        graphView.getViewport().setMinX(-0.9);
@@ -333,12 +350,13 @@ public class ConsumersFragment extends Fragment {
             month += 1;
         }
         graphViewM.addSeries(seriesMonths);
+        seriesMonths.setColor(Color.RED);
         seriesMonths.setAnimated(true);
 //        graphViewM.getViewport().setMinX(0.5);
-        graphViewM.getViewport().setMaxX(13);
-//        graphViewM.getViewport().setMinY(0);
-//        graphViewM.getViewport().setMaxY(Collections.max(profileMonthly) * 1.1);
-//        graphViewM.getViewport().setYAxisBoundsManual(true);
+        graphViewM.getViewport().setMaxX(13.0d);
+        graphViewM.getViewport().setMinY(Collections.min(profileMonthly) * 0.8d);
+        graphViewM.getViewport().setMaxY(Collections.max(profileMonthly) * 1.2d);
+        graphViewM.getViewport().setYAxisBoundsManual(true);
         graphViewM.getViewport().setXAxisBoundsManual(true);
         graphViewM.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             @Override
@@ -384,7 +402,7 @@ public class ConsumersFragment extends Fragment {
             ProjectModel currProject = dbh.getProjectInfoById(projectId);
 
             // TODO compute suggested battery size
-            Integer batterySize = 5000;
+            Integer batterySize = 15000;
 
             Double arrayPower = new Double(currProject.getPower()*1000);
             Log.d("PROJECT POWR", currProject.getPower().toString());
@@ -446,7 +464,8 @@ public class ConsumersFragment extends Fragment {
 
 
             // TODO compute optimal storage size
-            dbh.updateOptimalStorage(projectId, 8.0d);
+            dbh.updateOptimalStorage(projectId, 0d);
+            dbh.setBattery(projectId, 0d);
 
             Log.d("Async task", string);
             //
